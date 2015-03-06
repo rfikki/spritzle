@@ -1,0 +1,22 @@
+<h1>Create new contract</h1>
+
+<ng-form name="create-contract-form">
+    <div class="formItem">
+        <label class="label">Description:</label><input type="text" ng-bind="contract.description"/>
+    </div>
+
+    <div class="formItem">
+        <label class="label">Number of units:</label><input type="number" default="1" ng-bind="contract.amount"/>
+    </div>
+
+    <div class="formItem">
+        <label class="label">Expiration Date:</label><input type="datetime-local" default="{{web3.timestamp}}" ng-bind="contract.expirationDate"/>
+    </div>
+
+    <div class="formItem">
+        <label class="label">Contracted Price:</label><input type="number" ng-bind="contract.contractedPrice"/>
+    </div>
+
+
+
+</ng-form>
