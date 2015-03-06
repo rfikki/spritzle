@@ -4,6 +4,7 @@
 angular.module('spritzle', [
   'ngRoute',
     'ngAnimate',
+    'angularMoment',
   'spritzle.contract',
   'spritzle.view1',
   'spritzle.view2',

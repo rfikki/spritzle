@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('spritzle.contract', ['ngRoute', 'ngAnimate'])
+angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
     .factory('web3', function() {
         var web3 = require('web3');
@@ -34,8 +34,8 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate'])
         $scope.updateStatus = function(){
             var account = web3.eth.accounts[0];
             $scope.web3.block = web3.eth.blockNumber;
-            $scope.web3.balance = web3.fromWei(web3.eth.getBalance(account), "ether");
-            $scope.web3.timestamp = web3.eth.block(web3.eth.blockNumber).timestamp;
+            $scope.web3.balance = web3.fromWei(web3.eth.getBalance(account), "ether").toNumber();
+            $scope.web3.timestamp = web3.eth.getBlock(web3.eth.blockNumber).timestamp * 1000;
             console.log('updated status. block: ' + web3.eth.blockNumber);
             console.log('scope: ' + $scope.web3.timestamp);
             try{
@@ -62,8 +62,51 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate'])
 
     }])
 
-    .controller('CreateCtrl', ['$scope', '$routeParams', '$q', '$http', 'web3', function($scope, $routeParams, $q, http, web3) {
+    .controller('CreateCtrl', ['$scope', '$routeParams', '$q', '$http', 'web3', 'moment', function($scope, $routeParams, $q, http, web3, moment) {
 
+        $scope.oracles = [
+            {description: 'Bitcoin', address:'0x12ec7131131f65d264f435bdf24f57db263e3b6f'}
+        ]
+        $scope.oracle = 0;
+
+        $scope.contract = {
+            'amount': 1,
+            'multiple': 1,
+            'fraction': 1
+        };
+        $scope.timeunits = "minutes";
+        $scope.timedelta = 2;
+
+        $scope.expirationTime = moment().add($scope.timedelta, $scope.timeunits);
+
+        $scope.$watch("timedelta", function(value){
+            console.log('setting time delta');
+            $scope.expirationTime = moment().add(value, $scope.timeunits);
+        });
+
+
+        $scope.setTimeUnits = function(timeunits){
+            $scope.timeunits = timeunits;
+            $scope.expirationTime = moment().add($scope.timedelta, $scope.timeunits);
+        };
+
+        $scope.setOracle = function(oracle){
+            $scope.contract.oracle = oracle;
+        }
+
+        $scope.timeunitstatus = {
+            isopen: false
+        };
+
+        $scope.oracletstatus = {
+            isopen: false
+        };
+
+        $scope.toggleDropdown = function($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
+            $scope.status.isopen = !$scope.status.isopen;
+        };
 
 
     }])

@@ -1,21 +1,63 @@
 <h1>Create new contract</h1>
 
 <ng-form name="create-contract-form">
-    <div class="formItem">
-        <label class="label">Description:</label><input type="text" ng-bind="contract.description"/>
-    </div>
+    <table>
+        <tr>
+            <td><label class="form-label">Description:</label></td><td><input type="text" ng-model="contract.description"/></td>
+        </tr>
 
-    <div class="formItem">
-        <label class="label">Number of units:</label><input type="number" default="1" ng-bind="contract.amount"/>
-    </div>
+        <tr>
+            <td><label class="form-label">Number of units:</label></td><td><input type="number" default="1" ng-model="contract.amount"/></td>
+        </tr>
 
-    <div class="formItem">
-        <label class="label">Expiration Date:</label><input type="datetime-local" default="{{web3.timestamp}}" ng-bind="contract.expirationDate"/>
-    </div>
+        <tr>
+            <td><label class="form-label">Expiration:</label></td><td><input type="text" default="2" ng-model="timedelta"/>
+                <div class="btn-group" dropdown is-open="timeunitstatus.isopen">
+                    <button type="button" class="btn btn-default dropdown-toggle" dropdown-toggle ng-disabled="disabled">
+                        {{timeunits}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a ng-click="setTimeUnits('seconds')">seconds</a></li>
+                        <li><a ng-click="setTimeUnits('minutes')">minutes</a></li>
+                        <li><a ng-click="setTimeUnits('hours')">hours</a></li>
+                        <li><a ng-click="setTimeUnits('days')">days</a></li>
+                        <li><a ng-click="setTimeUnits('months')">months</a></li>
+                    </ul>
+                </div>
 
-    <div class="formItem">
-        <label class="label">Contracted Price:</label><input type="number" ng-bind="contract.contractedPrice"/>
-    </div>
+                from now ({{expirationTime | amCalendar}})
+            </td>
+        </tr>
+
+        <tr>
+            <td><label class="form-label">Oracle:</label></td>
+            <td>
+                <div class="btn-group" dropdown is-open="oraclestatus.isopen">
+                    <button type="button" class="btn btn-default dropdown-toggle" dropdown-toggle ng-disabled="disabled">
+                        {{oracles[oracle].description}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li ng-repeat="oracle in oracles">
+                            <a ng-click="setOracle($index)">{{oracle.description}} ({{oracle.address}})</a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+
+        </tr>
+
+        <tr>
+            <td><label class="form-label">Contracted Price:</label></td><td><input type="number" ng-model="contract.contractedPrice"/></td>
+        </tr>
+
+        <tr>
+            <td><label class="form-label">Units:</label></td><td><input type="text" ng-model="contract.units"/></td>
+        </tr>
+
+        <tr>
+            <td><label class="form-label">Fraction:</label></td><td><input type="number" ng-model="contract.fraction"/></td>
+        </tr>
+    </table>
 
 
 

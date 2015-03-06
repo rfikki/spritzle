@@ -13,8 +13,12 @@
     "angular-animate": "~1.3.14",
     "angular-moment": "~0.9.0",
     "bignumber.js": "~2.0.0",
-
     "html5-boilerplate": "~4.3.0",
-    "ethereum.js": "git://github.com/ethereum/ethereum.js#develop"
+    "ethereum.js": "git://github.com/ethereum/ethereum.js#develop",
+    "bootstrap": "~3.3.2",
+    "angular-bootstrap": "~0.12.1"
+  },
+  "resolutions": {
+    "angular": "1.3.14"
   }
 }

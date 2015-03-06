@@ -11,6 +11,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/css/normalize.css">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/css/main.css">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.css">
   <link rel="stylesheet" href="app.css">
   <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
   <script src="bower_components/bignumber.js/bignumber.js"></script>
@@ -25,7 +27,9 @@
   <div ng-controller="StatusCtrl">
       <ul class="menu">
         <li><a href="#/contract/create">create</a></li>
-          <div class="status">balance: {{web3.balance}} ETH | block: <span class="label label-default value-change" ng-class="['value-'+web3.block]">{{web3.block}}</span></div>
+          <div class="status">balance: <span class="label label-default value-change" ng-class="['value-'+web3.balance]">{{web3.balance | number : 4}}</span> ETH |
+              block: <span class="label label-default value-change" ng-class="['value-'+web3.block]">{{web3.block}}</span> |
+              time: <span class="label label-default">{{web3.timestamp | date:'shortDate'}} {{web3.timestamp | date:'mediumTime'}}</span></div>
       </ul>
 
 
@@ -43,6 +47,10 @@
   -->
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-route/angular-route.js"></script>
+    <script type="text/javascript" src="bower_components/angular-animate/angular-animate.js"></script>
+    <script type="text/javascript" src="bower_components/moment/moment.js"></script>
+    <script type="text/javascript" src="bower_components/angular-moment/angular-moment.js"></script>
+    <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
   <script src="app.js"></script>
   <script src="contract/contract.js"></script>
   <script src="view1/view1.js"></script>
