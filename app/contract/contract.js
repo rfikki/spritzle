@@ -4,7 +4,7 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
     .factory('web3', function() {
         var web3 = require('web3');
-        web3.setProvider(new web3.providers.HttpSyncProvider("http://localhost:8080/"));
+        web3.setProvider(new web3.providers.HttpSyncProvider("http://127.0.0.1:8080/"));
         return web3;
     })
 
@@ -62,10 +62,10 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
     }])
 
-    .controller('CreateCtrl', ['$scope', '$routeParams', '$q', '$http', 'web3', 'moment', function($scope, $routeParams, $q, http, web3, moment) {
+    .controller('CreateCtrl', ['$scope', '$routeParams', '$q', '$http', 'web3', 'moment', function($scope, $routeParams, $q, $http, web3, moment) {
 
         $scope.oracles = [
-            {description: 'Bitcoin', address:'0x12ec7131131f65d264f435bdf24f57db263e3b6f'}
+            {description: 'Bitcoin', address:'0x2d99defea581c64b942daaea4f163efa8da36f55', abi:'bitcoin-price-oracle.abi'}
         ]
         $scope.oracle = 0;
 
@@ -80,7 +80,6 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
         $scope.expirationTime = moment().add($scope.timedelta, $scope.timeunits);
 
         $scope.$watch("timedelta", function(value){
-            console.log('setting time delta');
             $scope.expirationTime = moment().add(value, $scope.timeunits);
         });
 
@@ -90,8 +89,18 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
             $scope.expirationTime = moment().add($scope.timedelta, $scope.timeunits);
         };
 
+        var updateOracle = function(){
+            $http.get("abi/" + $scope.oracles[$scope.oracle].abi).then(function(res){
+                var OracleContractClass = web3.eth.contract(res.data);
+                var oracleContract = new OracleContractClass($scope.oracles[$scope.oracle].address);
+                $scope.contract.contractedPrice = web3.fromWei(oracleContract.call().getPrice(), "ether").toNumber();
+                console.log('oracle getPrice:' + oracleContract.call().getPrice());
+            });
+        }
+
         $scope.setOracle = function(oracle){
             $scope.contract.oracle = oracle;
+            updateOracle();
         }
 
         $scope.timeunitstatus = {
@@ -107,6 +116,8 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
             $event.stopPropagation();
             $scope.status.isopen = !$scope.status.isopen;
         };
+
+        updateOracle();
 
 
     }])
