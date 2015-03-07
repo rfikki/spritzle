@@ -1,26 +1,104 @@
-<h1>Contract Details</h1>
+<ul class="menu">
+    <li>Spritzle - investments on Ethereum</li>
+    <li><a href="#/contract/create/{{node}}">Create Contract</a></li>
+    <li>Contract Details</li>
+    <div class="status">
+        <span class="label label-default">{{userName}}</span> |
+        <span class="label label-default value-change" ng-class="['value-'+web3.balance]">{{web3.balance | number : 4}} ETH</span> |
+        <span class="label label-default value-change" ng-class="['value-'+web3.block]">block {{web3.block}}</span> |
+        <span class="label label-default">{{web3.timestamp | date:'shortDate'}} {{web3.timestamp | date:'mediumTime'}}</span>
+    </div>
+</ul>
+
+<h3>{{contract.amount}} {{contract.underlyingAssetDescription}}</h3>
 
 <table>
 
     <tr>
-        <td><label class="form-label">Address:</label></td>
-        <td>{{contractAddress}}</td>
+        <td><label class="form-label">Status:</label></td>
+        <td>
+            <span ng-if="!contract.isValid">Waiting to deploy to blockchain</span>
+            <span ng-if="contract.isValid && !contract.isAvailable && !contract.isSettled && (!(contract.seller && contract.buyer))">Deployed to Blockchain</span>
+            <span ng-if="contract.isValid && contract.isAvailable && !contract.isSettled">Available for purchase</span>
+            <span ng-if="contract.isValid && !contract.isAvailable && !contract.isSettled && (contract.seller && contract.buyer)">Purchased</span>
+            <span ng-if="contract.isValid && contract.isSettled">Settled</span>
+        </td>
+    </tr>
+    <!--<tr>
+        <td><label class="form-label">extended status:</label></td>
+        <td>
+            available: {{contract.isAvailable}}, settled: {{contract.isSettled}}, owner: {{contract.owner}}<br/>
+        </td>
+    </tr>-->
+
+    <tr>
+        <td><label class="form-label">Contracted Price:</label></td>
+        <td>{{contract.contractedPrice | number: 4}} ETH</td>
+    </tr>
+
+    <tr ng-if="!contract.isSettled">
+        <td><label class="form-label">Underlying Price:</label></td>
+        <td>{{contract.underlyingPrice | number: 4}} ETH</td>
+    </tr>
+
+    <tr ng-if="contract.isSettled">
+        <td><label class="form-label">Settlement Price:</label></td>
+        <td>{{contract.settlementPrice | number: 4}} ETH</td>
     </tr>
 
     <tr>
-        <td><label class="form-label">Description:</label></td>
-        <td>{{contract.amount}} {{contract.underlyingAssetUnitDescription}} of {{contract.underlyingAssetDescription}}</td>
-    </tr>
-
-    <tr>
-        <td><label class="form-label">Multiple:</label></td>
-        <td>{{contract.underlyingAssetMultiple / contract.underlyingAssetFraction}}</td>
+        <td><label class="form-label">Margin:</label></td>
+        <td>{{contract.marginPercent}}%</td>
     </tr>
 
     <tr>
         <td><label class="form-label">Expiration:</label></td>
-        <td>{{contract.expirationDate}}</td>
+        <td><span am-time-ago="contract.expirationDate"></span> ({{contract.expirationDate | amDateFormat:'h:mm:ss a'}})</td>
     </tr>
 
+    </tr>
+        <td><label class="form-label">Total Collateral:</label></td>
+        <td>{{contract.balance | number: 4}} ETH</td>
+    <tr>
 
+    <tr ng-if="contract.buyer || contract.seller">
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+
+    <tr ng-if="contract.seller">
+        <td><label class="form-label">Seller:</label></td>
+        <td><b>Name:</b> {{contract.seller}}<br/>
+            <b>Balance:</b> {{contract.sellerBalance | number:2}} ETH<br/>
+            <span ng-if="contract.sellerPnl"><b>P&N:</b> {{contract.sellerPnl | number:4}} ETH<br/></span>
+        </td>
+    </tr>
+    <tr ng-if="contract.buyer && contract.seller">
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr ng-if="contract.buyer && contract.seller != contract.buyer">
+        <td><label class="form-label">Buyer:</label></td>
+        <td><b>Name:</b> {{contract.buyer}}<br/>
+            <b>Balance:</b> {{contract.buyerBalance | number:2}} ETH<br/>
+            <span ng-if="contract.buyerPnl"><b>P&N:</b> {{contract.buyerPnl | number:4}} ETH<br/></span>
+        </td>
+
+
+
+    </tr>
+
+    <tr>
+        <td>
+            <button ng-if="contract.isValid && !contract.isAvailable && !contract.isSettled && !offerInProgress && !contract.seller" type="button" class="btn btn-primary" ng-disabled="disabled" ng-click="offerContract()">Offer ({{marginAmount | number:2}} ETH)</button>
+            <img ng-if="offerInProgress" src="spinner.gif"/>
+
+            <button ng-if="contract.isValid && contract.isAvailable && !contract.isSettled && !purchaseInProgress" type="button" class="btn btn-primary" ng-disabled="disabled" ng-click="buyContract()">Buy ({{marginAmount | number:2}} ETH)</button>
+            <img ng-if="purchaseInProgress" src="spinner.gif"/>
+
+            <button ng-if="contract.isValid && !contract.isAvailable && !contract.isSettled && (contract.seller && contract.buyer) && (getSystemTime() >= contract.expirationDate) && !closeInProgress" type="button" class="btn btn-primary" ng-disabled="disabled" ng-click="closeContract()">Settle</button>
+            <img ng-if="closeInProgress" src="spinner.gif"/>
+        </td>
+    </tr>
 </table>
+

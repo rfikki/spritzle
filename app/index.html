@@ -24,22 +24,12 @@
     <![endif]-->
 
 
-  <div ng-controller="StatusCtrl">
-      <ul class="menu">
-        <li><a href="#/contract/create">create</a></li>
-          <div class="status">balance: <span class="label label-default value-change" ng-class="['value-'+web3.balance]">{{web3.balance | number : 4}}</span> ETH |
-              block: <span class="label label-default value-change" ng-class="['value-'+web3.block]">{{web3.block}}</span> |
-              time: <span class="label label-default">{{web3.timestamp | date:'shortDate'}} {{web3.timestamp | date:'mediumTime'}}</span></div>
-      </ul>
-
-
-
 
   <div class="error" ng-if="web3.error">{{web3.error.message}}</div>
 
 
   <div ng-view></div>
-</div>
+
   <div style="position: absolute; bottom: 20px; left: 20px">Spritzle: v<span app-version></span></div>
 
   <!-- In production use:

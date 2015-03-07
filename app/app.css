@@ -1,12 +1,17 @@
 /* app css stylesheet */
 
 body {
+    padding-top: 10px;
     padding-left: 20px;
     padding-right: 20px;
 }
 
 .formItem {
     margin-bottom: 10px;
+}
+
+.label {
+    font-size: 100%;
 }
 
 .form-label {
@@ -22,13 +27,7 @@ body {
   padding: 0 0 0.5em;
 }
 
-.menu:before {
-  content: "[";
-}
 
-.menu:after {
-  content: "]";
-}
 
 .menu > li {
   display: inline;
