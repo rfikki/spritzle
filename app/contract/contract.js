@@ -8,6 +8,13 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
         return web3;
     })
 
+    .factory('oracles', function(){
+        return [
+            {description: 'Random', address: '0x82c598d55c6cc276d4a5b29cd82d5dec3309818d', abi:'price-oracle.abi'},
+            {description: 'Bitcoin', address:'0x2d99defea581c64b942daaea4f163efa8da36f55', abi:'bitcoin-price-oracle.abi'}
+        ];
+    })
+
     .config(['$routeProvider', function($routeProvider) {
         $routeProvider.when('/contract/create', {
             templateUrl: 'contract/create.html',
@@ -19,7 +26,7 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
         });
     }])
 
-    .controller('StatusCtrl', ['$scope', '$log', 'web3', function($scope, $log, web3){
+    .controller('StatusCtrl', ['$scope', '$rootScope', '$log', 'web3', function($scope, $rootScope, $log, web3){
         $scope.web3 = {};
 
         // test if web3 is available
@@ -48,6 +55,7 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
         var init = function(){
             web3.eth.filter('chain').watch(function(res){
+               $rootScope.$broadcast('newBlock');
                $scope.updateStatus();
             });
         }
@@ -62,11 +70,9 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
     }])
 
-    .controller('CreateCtrl', ['$scope', '$routeParams', '$q', '$http', 'web3', 'moment', function($scope, $routeParams, $q, $http, web3, moment) {
+    .controller('CreateCtrl', ['$scope', '$routeParams', '$q', '$http', '$location', '$log', 'moment', 'web3', 'oracles', function($scope, $routeParams, $q, $http, $location, $log, moment, web3, oracles) {
 
-        $scope.oracles = [
-            {description: 'Bitcoin', address:'0x2d99defea581c64b942daaea4f163efa8da36f55', abi:'bitcoin-price-oracle.abi'}
-        ]
+        $scope.oracles = oracles;
         $scope.oracle = 0;
 
         $scope.contract = {
@@ -119,6 +125,33 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
         updateOracle();
 
+        $scope.$on('newBlock', function(){
+            console.log("new block detected");
+           updateOracle();
+           if($scope.contractAddress){
+               $location.path('/contract/details/' + $scope.contractAddress);
+           }
+        });
+
+        $scope.createContract = function(){
+            $http.get("abi/custodial-forward.sol").then(function(res){
+                var compiled = web3.eth.compile.solidity(res.data);
+                if(!compiled){
+                    $log.error("compilation error!");
+                    return;
+                }
+                var address = web3.eth.sendTransaction({code: compiled});
+                if(address){
+                    $scope.contractAddress = address;
+                    console.log("contract created at " + address);
+                }
+
+
+            });
+        }
+
+
+
 
     }])
 
@@ -149,6 +182,8 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
 
         }
+
+        init();
 
     }]);
 
