@@ -10,7 +10,7 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
     .factory('oracles', function(){
         return [
-            {description: 'Random', address: '0x82c598d55c6cc276d4a5b29cd82d5dec3309818d', abi:'price-oracle.abi'},
+            {description: 'Random', address: '0x2f67e0e8aba776588c3b04695e4bb9516b05dda1', abi:'price-oracle.abi'},
             {description: 'Bitcoin', address:'0x2d99defea581c64b942daaea4f163efa8da36f55', abi:'bitcoin-price-oracle.abi'}
         ];
     })
@@ -44,7 +44,6 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
             $scope.web3.balance = web3.fromWei(web3.eth.getBalance(account), "ether").toNumber();
             $scope.web3.timestamp = web3.eth.getBlock(web3.eth.blockNumber).timestamp * 1000;
             console.log('updated status. block: ' + web3.eth.blockNumber);
-            console.log('scope: ' + $scope.web3.timestamp);
             try{
                 $scope.$digest();
             }catch(e){
@@ -74,11 +73,13 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
         $scope.oracles = oracles;
         $scope.oracle = 0;
+        $scope.contractReady = false;
 
         $scope.contract = {
             'amount': 1,
             'multiple': 1,
-            'fraction': 1
+            'fraction': 1,
+            'marginPercent': 15
         };
         $scope.timeunits = "minutes";
         $scope.timedelta = 2;
@@ -129,6 +130,20 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
             console.log("new block detected");
            updateOracle();
            if($scope.contractAddress){
+               console.log("getting ABI");
+               $http.get("abi/custodial-forward.abi").then(function(res){
+                   console.log("setting parameters");
+                   var ContractClass = web3.eth.contract(res.data);
+                   var contract = new ContractClass($scope.contractAddress);
+                   var expirationDate = $scope.expriationTime / 1000;
+                   var contractedPrice = web3.toWei($scope.contract.contractedPrice, "ether");
+                   contract.setParameters($scope.contract.amount, expirationDate, contractedPrice, oracles[$scope.oracle].address, $scope.contract.description, $scope.contract.units, $scope.contract.fraction, $scope.contract.multiple, $scope.contract.marginPercent);
+                   $scope.contractReady = true;
+               });
+           }
+
+           if($scope.contractReady){
+               console.log("redirecting to contract page");
                $location.path('/contract/details/' + $scope.contractAddress);
            }
         });
@@ -140,7 +155,7 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
                     $log.error("compilation error!");
                     return;
                 }
-                var address = web3.eth.sendTransaction({code: compiled});
+                var address = web3.eth.sendTransaction({code: compiled, gas:300000});
                 if(address){
                     $scope.contractAddress = address;
                     console.log("contract created at " + address);
@@ -155,16 +170,34 @@ angular.module('spritzle.contract', ['ngRoute', 'ngAnimate', 'ui.bootstrap'])
 
     }])
 
-    .controller('DetailsCtrl', ['$scope', '$routeParams', '$q', '$http', 'web3', function($scope, $routeParams, $q, http, web3) {
+    .controller('DetailsCtrl', ['$scope', '$routeParams', '$q', '$http', 'web3', function($scope, $routeParams, $q, $http, web3) {
         $scope.contract = {};
         $scope.web3 = {};
         $scope.contractAddress = $routeParams.contractAddress;
-        $scope.contract = $q.defer();
+        var web3contract = $q.defer();
 
+        $http.get('abi/custodial-forward.abi').then(function(res) {
+            var ContractClass = web3.eth.contract(res.data);
+            web3contract.resolve(new ContractClass($scope.contractAddress));
+        });
 
         $scope.updateContract = function(){
-
+            web3contract.promise.then(function(contract){
+                $scope.contract.amount = contract.call().amount();
+                $scope.contract.expirationDate = contract.call().expirationDate() * 1000;
+                $scope.contract.contractedPrice = contract.call().contractedPrice();
+                $scope.contract.underlyingPrice = contract.call().getUnderlyingPrice();
+                $scope.contract.underlyingAssetDescription = contract.call().underlyingAssetDescription();
+                $scope.contract.underlyingAssetUnitDescription = contract.call().underlyingAssetUnitDescription();
+                $scope.contract.underlyingAssetFraction = contract.call().underlyingAssetFraction();
+                $scope.contract.underlyingAssetMultiple = contract.call().underlyingAssetMultiple();
+                $scope.contract.marginPercent = contract.call().marginPercent();
+            });
         };
+
+        $scope.$on("newBlock", function(){
+            $scope.updateContract();
+        });
 
         // test if web3 is available
         try {

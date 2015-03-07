@@ -1,0 +1,26 @@
+<h1>Contract Details</h1>
+
+<table>
+
+    <tr>
+        <td><label class="form-label">Address:</label></td>
+        <td>{{contractAddress}}</td>
+    </tr>
+
+    <tr>
+        <td><label class="form-label">Description:</label></td>
+        <td>{{contract.amount}} {{contract.underlyingAssetUnitDescription}} of {{contract.underlyingAssetDescription}}</td>
+    </tr>
+
+    <tr>
+        <td><label class="form-label">Multiple:</label></td>
+        <td>{{contract.underlyingAssetMultiple / contract.underlyingAssetFraction}}</td>
+    </tr>
+
+    <tr>
+        <td><label class="form-label">Expiration:</label></td>
+        <td>{{contract.expirationDate}}</td>
+    </tr>
+
+
+</table>
